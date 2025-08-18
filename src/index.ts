@@ -4,14 +4,41 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import OpenAI from "openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// 環境変数からOpenAIクライアントおよび動作パラメータを設定する
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  // 任意: 互換エンドポイントやプロキシを使う場合は baseURL を指定
+  // https://github.com/openai/openai-node
+  baseURL: process.env.OPENAI_BASE_URL || undefined,
+});
 
-async function runGpt5(prompt: string, effort: "low" | "medium" | "high" = "medium"): Promise<string> {
+type Effort = "low" | "medium" | "high";
+type Verbosity = "low" | "medium" | "high";
+
+function parseEffort(value: string | undefined): Effort | undefined {
+  if (!value) return undefined;
+  const v = value.toLowerCase();
+  if (v === "low" || v === "medium" || v === "high") return v;
+  return undefined;
+}
+
+function parseVerbosity(value: string | undefined): Verbosity | undefined {
+  if (!value) return undefined;
+  const v = value.toLowerCase();
+  if (v === "low" || v === "medium" || v === "high") return v;
+  return undefined;
+}
+
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5";
+const DEFAULT_REASONING_EFFORT: Effort = parseEffort(process.env.OPENAI_REASONING_EFFORT) || "medium";
+const DEFAULT_TEXT_VERBOSITY: Verbosity = parseVerbosity(process.env.OPENAI_TEXT_VERBOSITY) || "low";
+
+async function runGpt5(prompt: string, effortOverride?: Effort): Promise<string> {
   const result = await openai.responses.create({
-    model: "gpt-5",
+    model: DEFAULT_MODEL,
     input: prompt,
-    reasoning: { effort },
-    text: { verbosity: "low" },
+    reasoning: { effort: effortOverride ?? DEFAULT_REASONING_EFFORT },
+    text: { verbosity: DEFAULT_TEXT_VERBOSITY },
   });
   const text = (result as any).output_text as string | undefined;
   return text ?? "";

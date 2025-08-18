@@ -21,6 +21,25 @@ Replace `OPENAI_API_KEY` with your real key.
 claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
 ```
 
+### Optional: Override model and parameters via env
+You can control the model and generation behavior using these env vars:
+
+- `OPENAI_MODEL` (default: `gpt-5`)
+- `OPENAI_REASONING_EFFORT` (`low` | `medium` | `high`, default: `medium`)
+- `OPENAI_TEXT_VERBOSITY` (`low` | `medium` | `high`, default: `low`)
+- `OPENAI_BASE_URL` (optional; set when using a compatible proxy endpoint)
+
+Example with overrides:
+
+```bash
+claude mcp add gpt-5-plan -s user \
+  -e OPENAI_API_KEY="sk-REPLACE_ME" \
+  -e OPENAI_MODEL="gpt-5" \
+  -e OPENAI_REASONING_EFFORT="high" \
+  -e OPENAI_TEXT_VERBOSITY="low" \
+  -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
+```
+
 - For project scope, run the same command at your project root and omit `-s user`.
 - If the same name already exists, remove it first:
 
@@ -40,7 +59,10 @@ If you want project-local settings, place `.cursor/mcp.json` at the repository r
         "/Users/kimurataiyou/gpt-5-plan-mcp/build/index.js"
       ],
       "env": {
-        "OPENAI_API_KEY": "sk-REPLACE_ME"
+        "OPENAI_API_KEY": "sk-REPLACE_ME",
+        "OPENAI_MODEL": "gpt-5",
+        "OPENAI_REASONING_EFFORT": "medium",
+        "OPENAI_TEXT_VERBOSITY": "low"
       },
       "autoStart": true
     }
