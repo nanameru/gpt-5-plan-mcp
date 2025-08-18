@@ -21,13 +21,17 @@ Replace `OPENAI_API_KEY` with your real key.
 claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
 ```
 
-### Optional: Override model and parameters via env
-You can control the model and generation behavior using these env vars:
+### Optional: Model and generation parameters (env)
+Use the following env vars to control behavior:
 
-- `OPENAI_MODEL` (default: `gpt-5`)
-- `OPENAI_REASONING_EFFORT` (`low` | `medium` | `high`, default: `medium`)
-- `OPENAI_TEXT_VERBOSITY` (`low` | `medium` | `high`, default: `low`)
-- `OPENAI_BASE_URL` (optional; set when using a compatible proxy endpoint)
+- `OPENAI_MODEL` (default: `gpt-5`) — effective
+- `OPENAI_TEXT_VERBOSITY` (`low` | `medium` | `high`, default: `low`) — effective
+- `OPENAI_BASE_URL` (optional; set when using a compatible proxy endpoint) — effective
+- `OPENAI_REASONING_EFFORT` (`low` | `medium` | `high`, default: `medium`) — note: currently overridden per tool
+
+Notes:
+- The server sets fixed reasoning effort per tool: `gpt5_plan` uses `medium`, `gpt5_execute` uses `high`. Therefore `OPENAI_REASONING_EFFORT` does not affect these today.
+- If you want `OPENAI_REASONING_EFFORT` to take effect globally, remove the tool-specific overrides in `src/index.ts`.
 
 Example with overrides:
 
@@ -39,6 +43,8 @@ claude mcp add gpt-5-plan -s user \
   -e OPENAI_TEXT_VERBOSITY="low" \
   -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
 ```
+
+Tip: With the current defaults, the `OPENAI_REASONING_EFFORT` value will be ignored (plan=medium, execute=high).
 
 - For project scope, run the same command at your project root and omit `-s user`.
 - If the same name already exists, remove it first:
@@ -69,6 +75,8 @@ If you want project-local settings, place `.cursor/mcp.json` at the repository r
   }
 }
 ```
+
+Note: In this configuration, `OPENAI_MODEL` / `OPENAI_TEXT_VERBOSITY` are applied. `OPENAI_REASONING_EFFORT` is currently overridden by tool defaults (plan=medium, execute=high).
 
 - Restart Cursor after updating the configuration.
 - If you see a 401 error, double‑check the `OPENAI_API_KEY` value/permissions and make sure there are no extra spaces/newlines.
