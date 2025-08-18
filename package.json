@@ -1,5 +1,5 @@
 {
-  "name": "mcp-server-quickstart",
+  "name": "gpt-5-plan-mcp",
   "version": "1.0.0",
   "main": "build/index.js",
   "type": "module",

@@ -8,7 +8,7 @@ This repository contains an MCP server (STDIO) that uses GPT-5 to create and exe
 
 ## Build
 ```bash
-cd /Users/kimurataiyou/new-mcp-server/mcp-server-quickstart
+cd /Users/kimurataiyou/new-mcp-server
 npm i
 npm run build
 ```
@@ -18,7 +18,7 @@ Use the command below to add this MCP server to Claude Code.
 Replace `OPENAI_API_KEY` with your real key.
 
 ```bash
-claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js
+claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/new-mcp-server/build/index.js
 ```
 
 - For project scope, run the same command at your project root and omit `-s user`.
@@ -37,7 +37,7 @@ If you want project-local settings, place `.cursor/mcp.json` at the repository r
     "gpt-5-plan": {
       "command": "node",
       "args": [
-        "/Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js"
+        "/Users/kimurataiyou/new-mcp-server/build/index.js"
       ],
       "env": {
         "OPENAI_API_KEY": "sk-REPLACE_ME"
