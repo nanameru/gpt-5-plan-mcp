@@ -27,6 +27,18 @@ type ForecastResponse = {
   };
 };
 
+type AlertsResponse = {
+  features: Array<{
+    properties: {
+      event?: string;
+      areaDesc?: string;
+      severity?: string;
+      description?: string;
+      instruction?: string;
+    };
+  }>;
+};
+
 async function makeNWSRequest<TResponse>(url: string): Promise<TResponse> {
   const response = await fetch(url, {
     headers: {
@@ -56,6 +68,25 @@ function formatForecastText(forecast: ForecastResponse): string {
     );
   }
   return lines.join("\n");
+}
+
+function formatAlertText(alerts: AlertsResponse): string {
+  if (!alerts.features || alerts.features.length === 0) {
+    return "No active alerts for this state.";
+  }
+  const chunks: string[] = [];
+  for (const feature of alerts.features) {
+    const props = feature.properties || {};
+    const block = [
+      `Event: ${props.event ?? "Unknown"}`,
+      `Area: ${props.areaDesc ?? "Unknown"}`,
+      `Severity: ${props.severity ?? "Unknown"}`,
+      `Description: ${props.description ?? "No description available"}`,
+      `Instructions: ${props.instruction ?? "No specific instructions provided"}`,
+    ].join("\n");
+    chunks.push(block);
+  }
+  return chunks.join("\n---\n");
 }
 
 const server = new Server(
@@ -91,48 +122,81 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["latitude", "longitude"],
         },
       },
+      {
+        name: "get_alerts",
+        description: "Get weather alerts for a US state (two-letter code, e.g., CA, NY)",
+        inputSchema: {
+          type: "object",
+          properties: {
+            state: {
+              type: "string",
+              description: "Two-letter US state code",
+            },
+          },
+          required: ["state"],
+        },
+      },
     ],
   };
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name !== "get_forecast") {
-    throw new Error("Unknown tool");
+  if (request.params.name === "get_forecast") {
+    const { latitude, longitude } = (request.params.arguments || {}) as {
+      latitude?: number;
+      longitude?: number;
+    };
+
+    if (
+      typeof latitude !== "number" ||
+      Number.isNaN(latitude) ||
+      typeof longitude !== "number" ||
+      Number.isNaN(longitude)
+    ) {
+      throw new Error("Invalid arguments: latitude and longitude are required numbers");
+    }
+
+    const pointsUrl = `${NWS_API_BASE}/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`;
+    const pointsData = await makeNWSRequest<PointsResponse>(pointsUrl);
+
+    const forecastUrl = pointsData.properties.forecast;
+    if (!forecastUrl) {
+      throw new Error("Forecast URL not available for the given location");
+    }
+
+    const forecastData = await makeNWSRequest<ForecastResponse>(forecastUrl);
+    const forecastText = formatForecastText(forecastData);
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: forecastText,
+        },
+      ],
+    };
   }
 
-  const { latitude, longitude } = (request.params.arguments || {}) as {
-    latitude?: number;
-    longitude?: number;
-  };
-
-  if (
-    typeof latitude !== "number" ||
-    Number.isNaN(latitude) ||
-    typeof longitude !== "number" ||
-    Number.isNaN(longitude)
-  ) {
-    throw new Error("Invalid arguments: latitude and longitude are required numbers");
+  if (request.params.name === "get_alerts") {
+    const { state } = (request.params.arguments || {}) as { state?: string };
+    if (!state || typeof state !== "string" || state.trim().length !== 2) {
+      throw new Error("Invalid arguments: state must be a two-letter US state code");
+    }
+    const code = state.trim().toUpperCase();
+    const url = `${NWS_API_BASE}/alerts/active/area/${code}`;
+    const alertsData = await makeNWSRequest<AlertsResponse>(url);
+    const text = formatAlertText(alertsData);
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text,
+        },
+      ],
+    };
   }
 
-  const pointsUrl = `${NWS_API_BASE}/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`;
-  const pointsData = await makeNWSRequest<PointsResponse>(pointsUrl);
-
-  const forecastUrl = pointsData.properties.forecast;
-  if (!forecastUrl) {
-    throw new Error("Forecast URL not available for the given location");
-  }
-
-  const forecastData = await makeNWSRequest<ForecastResponse>(forecastUrl);
-  const forecastText = formatForecastText(forecastData);
-
-  return {
-    content: [
-      {
-        type: "text" as const,
-        text: forecastText,
-      },
-    ],
-  };
+  throw new Error("Unknown tool");
 });
 
 const transport = new StdioServerTransport();
