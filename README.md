@@ -54,7 +54,6 @@ claude mcp remove gpt-5-plan
 ## 利用できるツール
 - `gpt5_plan`: 目標とコンテキストから、JSON 形式の実行可能なプランを生成
 - `gpt5_execute`: 受け取ったプラン（JSON/Text）を実行した結果を要約
-- `get_forecast` / `get_alerts`: NWS API を使った天気/警報取得（米国内）
 
 ## トラブルシュート
 - 401 認証エラー: `OPENAI_API_KEY` の実値・権限・余計な空白を確認
