@@ -13,12 +13,22 @@ npm i
 npm run build
 ```
 
-## Register with Claude Code (user scope, single-line)
-Use the command below to add this MCP server to Claude Code.
-Replace `OPENAI_API_KEY` with your real key.
+## Register with Claude Code
+Use the following command to add this MCP server to Claude Code. Replace `OPENAI_API_KEY` with your real key.
 
 ```bash
-claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
+claude mcp add gpt-5-plan -s user \
+  -e OPENAI_API_KEY="sk-REPLACE_ME" \
+  -e OPENAI_MODEL="gpt-5" \
+  -e OPENAI_REASONING_EFFORT="high" \
+  -e OPENAI_TEXT_VERBOSITY="low" \
+  -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
+```
+
+One-line equivalent:
+
+```bash
+claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -e OPENAI_MODEL="gpt-5" -e OPENAI_REASONING_EFFORT="high" -e OPENAI_TEXT_VERBOSITY="low" -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
 ```
 
 ### Optional: Model and generation parameters (env)
@@ -32,17 +42,6 @@ Use the following env vars to control behavior:
 Notes:
 - The server sets fixed reasoning effort per tool: `gpt5_plan` uses `medium`, `gpt5_execute` uses `high`. Therefore `OPENAI_REASONING_EFFORT` does not affect these today.
 - If you want `OPENAI_REASONING_EFFORT` to take effect globally, remove the tool-specific overrides in `src/index.ts`.
-
-Example with overrides:
-
-```bash
-claude mcp add gpt-5-plan -s user \
-  -e OPENAI_API_KEY="sk-REPLACE_ME" \
-  -e OPENAI_MODEL="gpt-5" \
-  -e OPENAI_REASONING_EFFORT="high" \
-  -e OPENAI_TEXT_VERBOSITY="low" \
-  -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
-```
 
 Tip: With the current defaults, the `OPENAI_REASONING_EFFORT` value will be ignored (plan=medium, execute=high).
 
