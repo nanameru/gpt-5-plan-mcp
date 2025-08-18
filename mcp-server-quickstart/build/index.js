@@ -49,6 +49,9 @@ function formatAlertText(alerts) {
     return chunks.join("\n---\n");
 }
 async function runGpt5(prompt, effort = "medium") {
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY.trim().length === 0) {
+        throw new Error("Missing OPENAI_API_KEY. Set it via env or .cursor/mcp.json env.");
+    }
     const result = await openai.responses.create({
         model: "gpt-5",
         input: prompt,
@@ -57,6 +60,28 @@ async function runGpt5(prompt, effort = "medium") {
     });
     const text = result.output_text;
     return text ?? "";
+}
+function extractJsonFromText(text) {
+    // Try direct JSON
+    try {
+        const parsed = JSON.parse(text);
+        return JSON.stringify(parsed, null, 2);
+    }
+    catch { }
+    // Try triple backtick code block
+    const codeBlock = text.match(/```json[\s\S]*?```/i) || text.match(/```[\s\S]*?```/);
+    if (codeBlock && codeBlock[0]) {
+        const inner = codeBlock[0]
+            .replace(/```json/i, "")
+            .replace(/```/g, "")
+            .trim();
+        try {
+            const parsed = JSON.parse(inner);
+            return JSON.stringify(parsed, null, 2);
+        }
+        catch { }
+    }
+    return text;
 }
 const server = new Server({
     name: "gpt-5-plan",
@@ -71,6 +96,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         tools: [
             {
                 name: "get_forecast",
+                title: "Get Forecast",
                 description: "Get weather forecast for a location",
                 inputSchema: {
                     type: "object",
@@ -89,6 +115,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             {
                 name: "get_alerts",
+                title: "Get Alerts",
                 description: "Get weather alerts for a US state (two-letter code, e.g., CA, NY)",
                 inputSchema: {
                     type: "object",
@@ -103,6 +130,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             {
                 name: "gpt5_plan",
+                title: "GPT-5 Plan",
                 description: "Use GPT-5 to produce a structured plan for a goal",
                 inputSchema: {
                     type: "object",
@@ -115,6 +143,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             {
                 name: "gpt5_execute",
+                title: "GPT-5 Execute",
                 description: "Use GPT-5 to execute a plan and return results",
                 inputSchema: {
                     type: "object",
@@ -124,6 +153,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                     },
                     required: ["plan"],
                 },
+            },
+            {
+                name: "health",
+                title: "Health Check",
+                description: "Return server health and configured capabilities",
+                inputSchema: { type: "object", properties: {} },
             },
         ],
     };
@@ -181,12 +216,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 Return ONLY JSON with the shape: { "goal": string, "steps": [ { "id": number, "title": string, "detail": string } ] }.
 Goal: ${goal}
 Context: ${context ?? "(none)"}`;
-        const planText = await runGpt5(prompt, "medium");
+        let planText;
+        try {
+            planText = await runGpt5(prompt, "medium");
+        }
+        catch (err) {
+            console.error("gpt5_plan error:", err);
+            throw err;
+        }
+        const normalized = extractJsonFromText(planText);
         return {
             content: [
                 {
                     type: "text",
-                    text: planText,
+                    text: normalized,
                 },
             ],
         };
@@ -201,12 +244,34 @@ Be terse and return actionable outputs; prefer code blocks when helpful.
 Goal: ${goal ?? "(not provided)"}
 Plan:
 ${plan}`;
-        const resultText = await runGpt5(execPrompt, "high");
+        let resultText;
+        try {
+            resultText = await runGpt5(execPrompt, "high");
+        }
+        catch (err) {
+            console.error("gpt5_execute error:", err);
+            throw err;
+        }
         return {
             content: [
                 {
                     type: "text",
                     text: resultText,
+                },
+            ],
+        };
+    }
+    if (request.params.name === "health") {
+        return {
+            content: [
+                {
+                    type: "text",
+                    text: JSON.stringify({
+                        name: "gpt-5-plan",
+                        status: "ok",
+                        hasOpenAIKey: Boolean(process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.trim().length > 0),
+                        tools: ["get_forecast", "get_alerts", "gpt5_plan", "gpt5_execute", "health"],
+                    }, null, 2),
                 },
             ],
         };
