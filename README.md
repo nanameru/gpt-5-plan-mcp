@@ -1,35 +1,35 @@
 # gpt-5-plan MCP Server
 
-このリポジトリは、GPT-5 を使ってプラン作成/実行を行う MCP サーバーです（STDIO）。
+This repository contains an MCP server (STDIO) that uses GPT-5 to create and execute plans.
 
-## 前提
+## Prerequisites
 - Node.js 18+
 - OpenAI API Key (`OPENAI_API_KEY`)
 
-## ビルド
+## Build
 ```bash
 cd /Users/kimurataiyou/new-mcp-server/mcp-server-quickstart
 npm i
 npm run build
 ```
 
-## Claude Code への登録（ユーザースコープ・1行コマンド）
-以下のコマンドで Claude Code に MCP サーバーを追加できます。
-`OPENAI_API_KEY` はあなたの実キーに置き換えてください。
+## Register with Claude Code (user scope, single-line)
+Use the command below to add this MCP server to Claude Code.
+Replace `OPENAI_API_KEY` with your real key.
 
 ```bash
 claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js
 ```
 
-- プロジェクトスコープに追加したい場合は、プロジェクトルートで `-s user` を省略して実行してください。
-- 既に同名で登録済みなら、再登録前に削除します:
+- For project scope, run the same command at your project root and omit `-s user`.
+- If the same name already exists, remove it first:
 
 ```bash
 claude mcp remove gpt-5-plan
 ```
 
-## Cursor での利用
-プロジェクトローカル設定を使う場合は、リポジトリ直下に `.cursor/mcp.json` を配置します。
+## Using with Cursor
+If you want project-local settings, place `.cursor/mcp.json` at the repository root.
 
 ```json
 {
@@ -48,15 +48,15 @@ claude mcp remove gpt-5-plan
 }
 ```
 
-- 反映後、Cursor を再起動します。
-- 401 エラー時は `OPENAI_API_KEY` の値と権限、余計な空白/改行がないかをご確認ください。
+- Restart Cursor after updating the configuration.
+- If you see a 401 error, double‑check the `OPENAI_API_KEY` value/permissions and make sure there are no extra spaces/newlines.
 
-## 利用できるツール
-- `gpt5_plan`: 目標とコンテキストから、JSON 形式の実行可能なプランを生成
-- `gpt5_execute`: 受け取ったプラン（JSON/Text）を実行した結果を要約
+## Available Tools
+- `gpt5_plan`: Generate an actionable JSON plan from a goal and optional context
+- `gpt5_execute`: Execute a provided plan (JSON/Text) and return a concise summary
 
-## トラブルシュート
-- 401 認証エラー: `OPENAI_API_KEY` の実値・権限・余計な空白を確認
-- Node バージョン: 18+ を推奨（`fetch` 標準サポート）
-- 絶対パス必須: `build/index.js` の絶対パスが正しいか確認
-- ログ（Claude 系）: `tail -n 50 -f ~/Library/Logs/Claude/mcp*.log`
+## Troubleshooting
+- 401 authentication error: verify `OPENAI_API_KEY` value, permissions, and that it has no extra whitespace
+- Node version: use 18+ (native `fetch`)
+- Use absolute paths: make sure the `build/index.js` path is correct
+- Claude logs: `tail -n 50 -f ~/Library/Logs/Claude/mcp*.log`
