@@ -59,7 +59,7 @@ async function runGpt5(prompt, effort = "medium") {
     return text ?? "";
 }
 const server = new Server({
-    name: "weather",
+    name: "gpt-5-plan",
     version: "1.0.0",
 }, {
     capabilities: {
@@ -85,20 +85,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                     },
                     required: ["latitude", "longitude"],
-                },
-            },
-            {
-                name: "get_alerts",
-                description: "Get weather alerts for a US state (two-letter code, e.g., CA, NY)",
-                inputSchema: {
-                    type: "object",
-                    properties: {
-                        state: {
-                            type: "string",
-                            description: "Two-letter US state code",
-                        },
-                    },
-                    required: ["state"],
                 },
             },
             {

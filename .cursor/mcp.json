@@ -1,12 +1,12 @@
 {
   "mcpServers": {
-    "weather-forecast": {
+    "gpt-5-plan": {
       "command": "node",
       "args": [
         "/Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js"
       ],
       "env": {
-        "OPENAI_API_KEY": "sk-REPLACE_ME"
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}"
       },
       "autoStart": true
     }
