@@ -13,15 +13,12 @@ npm i
 npm run build
 ```
 
-## Claude Code への登録コマンド（ユーザースコープ）
+## Claude Code への登録（ユーザースコープ・1行コマンド）
 以下のコマンドで Claude Code に MCP サーバーを追加できます。
 `OPENAI_API_KEY` はあなたの実キーに置き換えてください。
 
 ```bash
-claude mcp add gpt-5-plan \
-  -s user \
-  -e OPENAI_API_KEY=sk-REPLACE_ME \
-  -- $(which node) /Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js
+claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -- $(which node) /Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js
 ```
 
 - プロジェクトスコープに追加したい場合は、プロジェクトルートで `-s user` を省略して実行してください。
@@ -30,6 +27,29 @@ claude mcp add gpt-5-plan \
 ```bash
 claude mcp remove gpt-5-plan
 ```
+
+## Cursor での利用
+プロジェクトローカル設定を使う場合は、リポジトリ直下に `.cursor/mcp.json` を配置します。
+
+```json
+{
+  "mcpServers": {
+    "gpt-5-plan": {
+      "command": "node",
+      "args": [
+        "/Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js"
+      ],
+      "env": {
+        "OPENAI_API_KEY": "sk-REPLACE_ME"
+      },
+      "autoStart": true
+    }
+  }
+}
+```
+
+- 反映後、Cursor を再起動します。
+- 401 エラー時は `OPENAI_API_KEY` の値と権限、余計な空白/改行がないかをご確認ください。
 
 ## 利用できるツール
 - `gpt5_plan`: 目標とコンテキストから、JSON 形式の実行可能なプランを生成
