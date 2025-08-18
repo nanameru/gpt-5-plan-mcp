@@ -18,7 +18,8 @@
     "build"
   ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.3"
+    "@modelcontextprotocol/sdk": "^1.17.3",
+    "openai": "^5.12.2"
   },
   "devDependencies": {
     "@types/node": "^24.3.0",
