@@ -16,16 +16,7 @@ npm run build
 ## Register with Claude Code
 Use the following command to add this MCP server to Claude Code. Replace `OPENAI_API_KEY` with your real key.
 
-```bash
-claude mcp add gpt-5-plan -s user \
-  -e OPENAI_API_KEY="sk-REPLACE_ME" \
-  -e OPENAI_MODEL="gpt-5" \
-  -e OPENAI_REASONING_EFFORT="high" \
-  -e OPENAI_TEXT_VERBOSITY="low" \
-  -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
-```
 
-One-line equivalent:
 
 ```bash
 claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -e OPENAI_MODEL="gpt-5" -e OPENAI_REASONING_EFFORT="high" -e OPENAI_TEXT_VERBOSITY="low" -- $(which node) /Users/kimurataiyou/gpt-5-plan-mcp/build/index.js
