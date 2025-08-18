@@ -5,6 +5,9 @@
       "args": [
         "/Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js"
       ],
+      "env": {
+        "OPENAI_API_KEY": "sk-REPLACE_ME"
+      },
       "autoStart": true
     }
   }
