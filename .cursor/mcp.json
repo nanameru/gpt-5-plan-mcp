@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "weather-forecast": {
+      "command": "node",
+      "args": [
+        "/Users/kimurataiyou/new-mcp-server/mcp-server-quickstart/build/index.js"
+      ]
+    }
+  }
+}
+
