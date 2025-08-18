@@ -31,8 +31,8 @@ Use the following env vars to control behavior:
 - `OPENAI_REASONING_EFFORT` (`low` | `medium` | `high`, default: `medium`) — note: currently overridden per tool
 
 Notes:
-- The server sets fixed reasoning effort per tool: `gpt5_plan` uses `medium`, `gpt5_execute` uses `high`. Therefore `OPENAI_REASONING_EFFORT` does not affect these today.
-- If you want `OPENAI_REASONING_EFFORT` to take effect globally, remove the tool-specific overrides in `src/index.ts`.
+- The server sets fixed reasoning effort for `gpt5_plan` as `medium`. Therefore `OPENAI_REASONING_EFFORT` does not affect it today.
+- If you want `OPENAI_REASONING_EFFORT` to take effect globally, remove the fixed override in `src/index.ts`.
 
 Tip: With the current defaults, the `OPENAI_REASONING_EFFORT` value will be ignored (plan=medium, execute=high).
 
@@ -66,14 +66,13 @@ If you want project-local settings, place `.cursor/mcp.json` at the repository r
 }
 ```
 
-Note: In this configuration, `OPENAI_MODEL` / `OPENAI_TEXT_VERBOSITY` are applied. `OPENAI_REASONING_EFFORT` is currently overridden by tool defaults (plan=medium, execute=high).
+Note: In this configuration, `OPENAI_MODEL` / `OPENAI_TEXT_VERBOSITY` are applied. `OPENAI_REASONING_EFFORT` is currently overridden by the tool default (plan=medium).
 
 - Restart Cursor after updating the configuration.
 - If you see a 401 error, double‑check the `OPENAI_API_KEY` value/permissions and make sure there are no extra spaces/newlines.
 
 ## Available Tools
-- `gpt5_plan`: Generate an actionable JSON plan from a goal and optional context
-- `gpt5_execute`: Execute a provided plan (JSON/Text) and return a concise summary
+- `gpt5_plan`: Generate a YAML plan from inputs using the Japanese YAML spec
 
 ## Troubleshooting
 - 401 authentication error: verify `OPENAI_API_KEY` value, permissions, and that it has no extra whitespace

@@ -80,18 +80,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: [],
         },
       },
-      {
-        name: "gpt5_execute",
-        description: "Use GPT-5 to execute a plan and return results",
-        inputSchema: {
-          type: "object",
-          properties: {
-            goal: { type: "string", description: "Original goal for reference" },
-            plan: { type: "string", description: "Plan to execute (JSON or text)" },
-          },
-          required: ["plan"],
-        },
-      },
     ],
   };
 });
@@ -194,30 +182,6 @@ PANEL_COUNT: ${PANEL_COUNT}
         {
           type: "text" as const,
           text: planText,
-        },
-      ],
-    };
-  }
-
-  if (request.params.name === "gpt5_execute") {
-    const { goal, plan } = (request.params.arguments || {}) as {
-      goal?: string;
-      plan?: string;
-    };
-    if (!plan || typeof plan !== "string") {
-      throw new Error("Invalid arguments: plan is required and must be a string");
-    }
-    const execPrompt = `You are an execution agent. Given the following plan and optional goal, execute the steps and provide results.
-Be terse and return actionable outputs; prefer code blocks when helpful.
-Goal: ${goal ?? "(not provided)"}
-Plan:
-${plan}`;
-    const resultText = await runGpt5(execPrompt, "high");
-    return {
-      content: [
-        {
-          type: "text" as const,
-          text: resultText,
         },
       ],
     };
