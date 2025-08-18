@@ -1,6 +1,6 @@
 # gpt-5-plan MCP Server
 
-This repository contains an MCP server (STDIO) that uses GPT-5 to create and execute plans.
+This repository contains an MCP server (STDIO) that uses GPT-5 to create plans.
 
 ## Prerequisites
 - Node.js 18+
@@ -34,7 +34,7 @@ Notes:
 - The server sets fixed reasoning effort for `gpt5_plan` as `medium`. Therefore `OPENAI_REASONING_EFFORT` does not affect it today.
 - If you want `OPENAI_REASONING_EFFORT` to take effect globally, remove the fixed override in `src/index.ts`.
 
-Tip: With the current defaults, the `OPENAI_REASONING_EFFORT` value will be ignored (plan=medium, execute=high).
+Tip: With the current defaults, the `OPENAI_REASONING_EFFORT` value will be ignored (plan=medium).
 
 - For project scope, run the same command at your project root and omit `-s user`.
 - If the same name already exists, remove it first:
