@@ -85,3 +85,24 @@ Tip: With the current defaults, the `OPENAI_REASONING_EFFORT` value will be igno
 - Node version: use 18+ (native `fetch`)
 - Use absolute paths: make sure the `build/index.js` path is correct
 - Claude logs: `tail -n 50 -f ~/Library/Logs/Claude/mcp*.log`
+
+---
+
+## MCP Quickstart Notes (Node / STDIO)
+
+Refer to the official MCP Quickstart for Node for details: [Build an MCP Server (Node)](https://modelcontextprotocol.io/quickstart/server#node).
+
+- For STDIO-based servers, do not write to stdout (avoid `console.log`). It corrupts JSON-RPC.
+- Prefer a logger that writes to stderr or files.
+
+Bad (STDIO):
+```js
+// ❌ This breaks STDIO JSON-RPC
+console.log("Processing request");
+```
+
+Good (STDIO):
+```js
+// ✅ Use a logger that writes to stderr
+console.error("Processing request");
+```
