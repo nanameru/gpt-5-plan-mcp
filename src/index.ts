@@ -76,6 +76,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             kpi_preferences: { type: "string", description: "Preferred KPIs" },
             paneling: { type: "string", description: "on | off" },
             panel_count: { type: "string", description: "Number of panels if paneling=on" },
+            targets: { type: "string", description: "Comma-separated file paths to focus edits on (e.g., src/index.ts)" },
           },
           required: [],
         },
