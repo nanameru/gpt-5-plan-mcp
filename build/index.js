@@ -52,12 +52,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         tools: [
             {
                 name: "gpt5_plan",
-                description: "Use GPT-5 to produce a structured plan for a goal",
+                description: "Before calling this tool, review all relevant project files (requirements, existing code, configs, docs) and provide a brief context summary; then use GPT-5 to produce a structured plan",
                 inputSchema: {
                     type: "object",
                     properties: {
                         goal: { type: "string", description: "High-level goal to accomplish (fallback for user_request)" },
-                        context: { type: "string", description: "Optional context or constraints" },
+                        context: { type: "string", description: "Concise summary after reviewing all relevant files (paths + key findings, constraints, existing design)" },
                         user_request: { type: "string", description: "Requested outcome in user's words" },
                         scope: { type: "string", description: "full | partial" },
                         focus_features: { type: "string", description: "Comma-separated focus features" },
@@ -67,6 +67,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         kpi_preferences: { type: "string", description: "Preferred KPIs" },
                         paneling: { type: "string", description: "on | off" },
                         panel_count: { type: "string", description: "Number of panels if paneling=on" },
+                        targets: { type: "string", description: "Comma-separated file paths to focus edits on (e.g., src/index.ts)" },
                     },
                     required: [],
                 },
@@ -76,7 +77,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (request.params.name === "gpt5_plan") {
-        const { goal, context, user_request, scope, focus_features, project_type, non_functionals, constraints, kpi_preferences, paneling, panel_count, } = (request.params.arguments || {});
+        const { goal, context, user_request, scope, focus_features, project_type, non_functionals, constraints, kpi_preferences, paneling, panel_count, targets, } = (request.params.arguments || {});
         const USER_REQUEST = user_request ?? goal ?? "";
         const SCOPE = scope ?? "full";
         const FOCUS_FEATURES = focus_features ?? "";
@@ -86,6 +87,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const KPI_PREFERENCES = kpi_preferences ?? "";
         const PANELING = paneling ?? "off";
         const PANEL_COUNT = panel_count ?? "6";
+        const TARGETS = targets ?? "";
         const prompt = `あなたは熟練のソリューションアーキテクトです。以下の入力から、非エンジニアにも分かる言葉で、開発計画を**有効なYAMLのみ**で出力してください。技術スタックは**決め打ちしない**で複数案を比較し、採用は保留可。不明点はassumptions/open_questionsで明示。
 
 # 入力
@@ -98,6 +100,7 @@ CONSTRAINTS: ${CONSTRAINTS}
 KPI_PREFERENCES: ${KPI_PREFERENCES}
 PANELING: ${PANELING}    # on/off
 PANEL_COUNT: ${PANEL_COUNT}
+TARGETS: ${TARGETS}
 
 # 出力要件（YAMLキー仕様）
 - context: {summary, scope, constraints, kpi}
@@ -138,8 +141,15 @@ PANEL_COUNT: ${PANEL_COUNT}
   open_questions: []
 - PANELING=on の場合、最後に panels を追加:
   panels:  # コマ割り（${PANEL_COUNT}目安）
-    - {title, body}  # 1コマ=要点サマリ。非エンジニア向け簡潔文。`;
-        const planText = await runGpt5(prompt, "medium");
+    - {title, body}  # 1コマ=要点サマリ。非エンジニア向け簡潔文。
+
+# 最小変更ポリシー（Minimal Change Policy）
+# - TARGETS が空でない場合: 提案は TARGETS で指定されたファイルに限定し、可能な限り行レベル/小変更に留める
+# - 大規模リファクタや新規ファイル追加は、本質的に不可避な場合のみ 'next_steps' に回し、本プランの features には含めない
+# - 影響範囲が広いと判断される場合は、今回は簡潔な 'patch_plan' に留めること
+`;
+        const reasoningEffort = (SCOPE === "partial" || (TARGETS && TARGETS.trim().length > 0)) ? "low" : "medium";
+        const planText = await runGpt5(prompt, reasoningEffort);
         return {
             content: [
                 {
