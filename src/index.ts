@@ -61,12 +61,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "gpt5_plan",
-        description: "Use GPT-5 to produce a structured plan for a goal",
+        description: "Before calling this tool, review all relevant project files (requirements, existing code, configs, docs) and provide a brief context summary; then use GPT-5 to produce a structured plan",
         inputSchema: {
           type: "object",
           properties: {
             goal: { type: "string", description: "High-level goal to accomplish (fallback for user_request)" },
-            context: { type: "string", description: "Optional context or constraints" },
+            context: { type: "string", description: "Concise summary after reviewing all relevant files (paths + key findings, constraints, existing design)" },
             user_request: { type: "string", description: "Requested outcome in user's words" },
             scope: { type: "string", description: "full | partial" },
             focus_features: { type: "string", description: "Comma-separated focus features" },
