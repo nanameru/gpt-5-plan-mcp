@@ -42,11 +42,7 @@ Most MCP clients support launching servers via `npx`. Use the standard configura
 Add this server with the CLI (no local clone needed):
 
 ```bash
-claude mcp add gpt-5-plan -s user \
-  -e OPENAI_API_KEY="sk-REPLACE_ME" \
-  -e OPENAI_MODEL="gpt-5" \
-  -e OPENAI_TEXT_VERBOSITY="low" \
-  -- npx -y gpt-5-plan-mcp@latest
+claude mcp add gpt-5-plan -s user -e OPENAI_API_KEY="sk-REPLACE_ME" -e OPENAI_MODEL="gpt-5" -e OPENAI_TEXT_VERBOSITY="low" -- npx -y gpt-5-plan-mcp@latest
 ```
 
 Remove if needed:
